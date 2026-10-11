@@ -87,16 +87,7 @@ jobs:
         run: rpmbuild -ba --nodebuginfo ./sheng-fedora-configs/sheng-fedora-configs.spec && createrepo_c --update ~/rpmbuild/RPMS
 
       # ================================================================
-      # Phase 2: fastrpc
-      # ================================================================
-      - name: "Build: fastrpc"
-        run: |
-          dnf builddep -y ./fastrpc/fastrpc.spec
-          rpmbuild -ba --nodebuginfo ./fastrpc/fastrpc.spec
-          createrepo_c --update ~/rpmbuild/RPMS
-
-      # ================================================================
-      # Phase 3: libssc
+      # Phase 2: libssc
       # ================================================================
       - name: "Build: libssc"
         run: |
@@ -106,7 +97,7 @@ jobs:
           createrepo_c --update ~/rpmbuild/RPMS
 
       # ================================================================
-      # Phase 4: Packages depending on libssc
+      # Phase 3: Packages depending on libssc
       # ================================================================
       - name: "Build: iio-sensor-proxy-sheng"
         run: |
@@ -131,7 +122,7 @@ jobs:
           createrepo_c --update ~/rpmbuild/RPMS
 
       # ================================================================
-      # Phase 5: Independent compiled packages
+      # Phase 4: Independent compiled packages
       # ================================================================
       - name: "Build: sheng-devauth"
         run: |
@@ -146,7 +137,7 @@ jobs:
           createrepo_c --update ~/rpmbuild/RPMS
 
       # ================================================================
-      # Phase 6: xiaomi-sheng-fingerprint
+      # Phase 5: xiaomi-sheng-fingerprint
       # ================================================================
       - name: "Build: xiaomi-sheng-fingerprint"
         run: |
@@ -155,7 +146,7 @@ jobs:
           createrepo_c --update ~/rpmbuild/RPMS
 
       # ================================================================
-      # Phase 7: Kernel (last, heaviest, with ccache)
+      # Phase 6: Kernel (last, heaviest, with ccache)
       # ================================================================
       - name: Restore ccache
         uses: actions/cache@v6
