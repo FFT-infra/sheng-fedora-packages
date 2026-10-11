@@ -2,7 +2,7 @@
 
 Name:           sheng-fedora-configs
 Version:        1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        System configuration and helper scripts for Xiaomi Pad 6S Pro (sheng)
 License:        Unknown
 URL:            https://github.com/runesign/mipad-6s-pro-linux
@@ -11,7 +11,6 @@ Source0:        %{name}-%{version}.tar.gz
 BuildRequires:  systemd-rpm-macros
 Requires:       systemd
 Requires:       xiaomi-sheng-firmware
-Requires:       qbootctl
 
 %global _firmwaredir %{_prefix}/lib/firmware
 
@@ -43,17 +42,15 @@ ln -s /mnt/persist/kiwi_v2/wlan_mac.bin \
 %{_unitdir}/sheng-audio-init.service
 %{_unitdir}/sheng-suspend-tuning.service
 %{_unitdir}/getty@tty1.service.d/autologin.conf
-%{_unitdir}/qbootctl.service.d/10-udev-settle.conf
 %{_unitdir}/rmtfs.service.d/10-sheng-no-rproc-sync.conf
 %{_unitdir}/waydroid-container.service.d/99-clean-stop.conf
 %{_prefix}/lib/tmpfiles.d/99-sheng-x11-unix.conf
 %{_prefix}/lib/systemd/system-shutdown/f2fs-root-shutdown
-%{_bindir}/sta
+# sta, the Android desktop entry, the icon and the qbootctl udev-settle drop-in
+# moved to the dedicated "switch-android" package; qbootctl is required there.
 %{_libexecdir}/bootmac-fix
 %{_libexecdir}/sheng-audio-init
 %{_libexecdir}/sheng-suspend-tuning
-%{_datadir}/applications/Android.desktop
-%{_datadir}/icons/hicolor/scalable/apps/android.svg
 %{_firmwaredir}/ath12k/WCN7850/hw2.0/wlan_mac.bin
 
 %post
