@@ -81,7 +81,9 @@ jobs:
         run: rpmbuild -ba --nodebuginfo ./xiaomi-charger-mode/xiaomi-charger-mode.spec && createrepo_c --update ~/rpmbuild/RPMS
 
       - name: "Build: sheng-sensors"
-        run: rpmbuild -ba --nodebuginfo ./sheng-sensors/sheng-sensors.spec && createrepo_c --update ~/rpmbuild/RPMS
+        run: |
+          cp ./sheng-sensors/adsprpcd-sensorspd.service ~/rpmbuild/SOURCES/
+          rpmbuild -ba --nodebuginfo ./sheng-sensors/sheng-sensors.spec && createrepo_c --update ~/rpmbuild/RPMS
 
       - name: "Build: sheng-fedora-configs"
         run: rpmbuild -ba --nodebuginfo ./sheng-fedora-configs/sheng-fedora-configs.spec && createrepo_c --update ~/rpmbuild/RPMS
