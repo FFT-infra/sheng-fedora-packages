@@ -1,0 +1,19 @@
+[Unit]
+Description=Sensors PD aDSP RPC daemon (adsprpcd sensorspd)
+Documentation=man:adsprpcd(8)
+# Fedora's fastrpc-services package only ships rootpd / audiopd / sdsp units.
+# The SensorPD daemon (adsprpcd sensorspd) is missing, so sheng-sensors ships it.
+Requires=dev-fastrpc\x2dadsp.device
+After=dev-fastrpc\x2dadsp.device
+ConditionPathExists=/dev/fastrpc-adsp
+Before=iio-sensor-proxy.service
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/adsprpcd sensorspd
+Restart=on-failure
+RestartSec=5
+RestartForceExitStatus=SIGTERM
+
+[Install]
+WantedBy=multi-user.target
