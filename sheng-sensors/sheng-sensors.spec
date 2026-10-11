@@ -2,13 +2,12 @@
 
 Name:           sheng-sensors
 Version:        20240917
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Sensor configuration files for Xiaomi Pad 6S Pro (sheng)
 License:        Proprietary
 URL:            https://github.com/ianchb/sm8550-mainline
 BuildArch:      noarch
 BuildRequires:  systemd-rpm-macros
-Requires:       iio-sensor-proxy-sheng
 Requires:       fastrpc
 Requires:       fastrpc-services
 Source0:        %{name}-%{version}.tar.gz
@@ -66,6 +65,10 @@ fi
 %systemd_postun_with_restart adsprpcd-sensorspd.service
 
 %changelog
+* Mon Oct 12 2026 Sheng Packaging <packaging@sheng.local> - 20240917-2
+- Drop Requires: iio-sensor-proxy-ssc; sheng-sensors is config-only and no
+  longer forces the SSC-enabled proxy. Install iio-sensor-proxy-ssc separately.
+
 * Mon Oct 12 2026 ianchb <ianchb@users.noreply.github.com> - 20240917-1
 - Ship adsprpcd-sensorspd.service (SensorPD daemon missing from fastrpc-services)
   and symlink /usr/share/hexagon-dsp -> qcom so libadsprpc finds the machine

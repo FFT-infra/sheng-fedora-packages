@@ -1,10 +1,11 @@
 %global debug_package %{nil}
 
-Name:           iio-sensor-proxy-sheng
+Name:           iio-sensor-proxy-ssc
 Version:        3.9
 Release:        1%{?dist}
 Provides:       iio-sensor-proxy%{?_isa}
 Conflicts:      iio-sensor-proxy
+Obsoletes:      iio-sensor-proxy-sheng
 Summary:        IIO sensors to D-Bus proxy (with Qualcomm SSC support)
 License:        GPLv3
 URL:            https://gitlab.freedesktop.org/hadess/iio-sensor-proxy
@@ -22,7 +23,7 @@ Requires:       libssc systemd
 %description
 iio-sensor-proxy with Qualcomm Sensor Core (SSC) support enabled.
 Proxies IIO sensor data to D-Bus, enabling accelerometer, ambient light,
-and proximity sensor access on Xiaomi Pad 6S Pro (SM8550).
+and proximity sensor access on Qualcomm Snapdragon platforms.
 
 %prep
 %autosetup -n iio-sensor-proxy-%{version}
@@ -58,3 +59,7 @@ systemctl enable iio-sensor-proxy.service
 %systemd_postun_with_restart iio-sensor-proxy.service
 
 %changelog
+* Mon Oct 12 2026 Sheng Packaging <packaging@sheng.local> - 3.9-1
+- Rename iio-sensor-proxy-sheng to iio-sensor-proxy-ssc (SSC-enabled variant)
+- Add Obsoletes: iio-sensor-proxy-sheng so upgrades auto-remove the old name
+- Keep Provides/Conflicts: iio-sensor-proxy; drop device-specific wording

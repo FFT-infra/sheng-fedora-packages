@@ -99,12 +99,12 @@ jobs:
       # ================================================================
       # Phase 3: Packages depending on libssc
       # ================================================================
-      - name: "Build: iio-sensor-proxy-sheng"
+      - name: "Build: iio-sensor-proxy-ssc"
         run: |
           dnf install -y ~/rpmbuild/RPMS/*/libssc-*.rpm
-          cp iio-sensor-proxy/49-iio-sensor-proxy.rules ~/rpmbuild/SOURCES/
-          dnf builddep -y ./iio-sensor-proxy/iio-sensor-proxy.spec
-          rpmbuild -ba --nodebuginfo ./iio-sensor-proxy/iio-sensor-proxy.spec
+          cp iio-sensor-proxy-ssc/49-iio-sensor-proxy.rules ~/rpmbuild/SOURCES/
+          dnf builddep -y ./iio-sensor-proxy-ssc/iio-sensor-proxy-ssc.spec
+          rpmbuild -ba --nodebuginfo ./iio-sensor-proxy-ssc/iio-sensor-proxy-ssc.spec
           createrepo_c --update ~/rpmbuild/RPMS
 
       - name: "Build: xiaomi-sheng-thp"
