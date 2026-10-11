@@ -12,7 +12,7 @@ ExclusiveArch:  aarch64
 BuildRequires:  gcc meson ninja-build
 BuildRequires:  glib2-devel protobuf-c-devel protobuf-c-compiler protobuf-compiler
 BuildRequires:  libqmi-devel
-BuildRequires:  python3-devel
+BuildRequires:  python3-devel vala
 Requires:       glib2 protobuf-c libqmi
 
 %description
@@ -35,9 +35,14 @@ Provides the ssccli command-line tool for interacting with SSC sensors.
 %{_libdir}/libssc.so.*
 %{_includedir}/libssc
 %{_libdir}/pkgconfig/libssc.pc
+%{_datadir}/vala/vapi/libssc.vapi
+%{_datadir}/vala/vapi/libssc.deps
 %exclude %{_libexecdir}/installed-tests
 %exclude %{python3_sitelib}/ssc_server
 %exclude %{_datadir}/gir-1.0/SSC-2.gir
 %exclude %{_libdir}/girepository-1.0/SSC-2.typelib
 
 %changelog
+* Mon Oct 12 2026 Sheng Packaging <packaging@sheng.local> - 0.4.4-1
+- Package Vala VAPI bindings; add vala BuildRequires so the package builds
+  deterministically regardless of whether vala is present in the build env
