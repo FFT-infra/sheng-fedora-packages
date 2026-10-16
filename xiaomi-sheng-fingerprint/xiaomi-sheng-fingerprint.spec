@@ -5,7 +5,7 @@
 
 Name:           xiaomi-sheng-fingerprint
 Version:        %{version_local}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        FPC1553 fingerprint sensor support for Xiaomi Pad 6S Pro
 License:        Apache-2.0 AND LGPL-2.1-or-later AND GPL-2.0-or-later
 URL:            https://github.com/ianchb/xiaomi-sheng-fingerprint
@@ -135,6 +135,7 @@ install -Dm644 udev/99-qcomtee-fpc.rules \
     %{buildroot}%{_udevrulesdir}/99-qcomtee-fpc.rules
 
 %files
+%license LICENSE
 %dir %{_libdir}/xiaomi-sheng-fingerprint
 %{_libdir}/xiaomi-sheng-fingerprint/libfprint-2.so
 %{_libdir}/xiaomi-sheng-fingerprint/libfprint-2.so.2
@@ -174,3 +175,6 @@ fi
 %systemd_postun_with_restart qteesupplicant.service
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.1.4-2
+- Ship the upstream license text (%license LICENSE, Apache-2.0); the LGPL/GPL
+  terms in the License tag come from the bundled libfprint sources

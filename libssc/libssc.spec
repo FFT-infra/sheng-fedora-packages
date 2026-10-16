@@ -2,9 +2,9 @@
 
 Name:           libssc
 Version:        0.4.4
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Qualcomm Sensor Core userspace library
-License:        GPLv3
+License:        GPL-3.0-or-later
 URL:            https://codeberg.org/DylanVanAssche/libssc
 Source0:        https://codeberg.org/DylanVanAssche/libssc/archive/v%{version}.tar.gz#/%{name}-%{version}.tar.gz
 Patch0:         wait_for_qmi_service.patch
@@ -30,6 +30,7 @@ Provides the ssccli command-line tool for interacting with SSC sensors.
 %meson_install
 
 %files
+%license LICENSE
 %{_bindir}/ssccli
 %{_libdir}/libssc.so
 %{_libdir}/libssc.so.*
@@ -43,6 +44,11 @@ Provides the ssccli command-line tool for interacting with SSC sensors.
 %exclude %{_libdir}/girepository-1.0/SSC-2.typelib
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.4.4-2
+- License: GPLv3 -> GPL-3.0-or-later: upstream LICENSE is the GPL-3 text and
+  the source headers grant "or any later version" (legacy GPLv3 means "only")
+- Ship the upstream license text (%license LICENSE)
+
 * Mon Oct 12 2026 Sheng Packaging <packaging@sheng.local> - 0.4.4-1
 - Package Vala VAPI bindings; add vala BuildRequires so the package builds
   deterministically regardless of whether vala is present in the build env

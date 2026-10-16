@@ -9,11 +9,11 @@
 %global PLATFORM_NAME sm8550
 
 Version:         %{KERNEL_RPMVER}
-Release:         3.%{DEVICE_NAME}%{?dist}
+Release:         4.%{DEVICE_NAME}%{?dist}
 ExclusiveArch:  aarch64
 Name:            kernel-%{PLATFORM_NAME}
 Summary:         Mainline Linux kernel for %{PLATFORM_NAME} devices
-License:         GPLv2
+License:         GPL-2.0-only
 URL:             https://github.com/ianchb/sm8550-mainline
 
 Source0:         %{url}/archive/%{KERNEL_TAG}.tar.gz
@@ -138,6 +138,7 @@ install -Dm644 %{SOURCE4} %{buildroot}%{_sysconfdir}/systemd/ukify.conf
 install -Dm644 %{SOURCE5} %{buildroot}%{_sysconfdir}/dracut.conf.d/99-sheng-generic.conf
 
 %files
+%license COPYING
 /boot/Image-*
 /boot/Image.gz-*
 /boot/Image.gz-dtb_%{DEVICE_NAME}-*
@@ -224,3 +225,9 @@ echo "SUCCESS: UKI generated at ${UKI_OUTPUT_PATH}"
 rm -f "${INITRD_PATH}"
 
 echo "--- UKI generation complete for ${KERNEL_RELEASE} ---"
+
+%changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-4.sheng
+- License: GPLv2 -> GPL-2.0-only (SPDX; upstream sm8550-mainline carries the
+  kernel's GPL-2.0 COPYING)
+- Ship the upstream license text (%license COPYING)

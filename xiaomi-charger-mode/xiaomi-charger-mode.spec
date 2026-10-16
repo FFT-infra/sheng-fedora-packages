@@ -2,9 +2,9 @@
 
 Name:           xiaomi-charger-mode
 Version:        0.20
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Charger mode boot handler for Xiaomi Pad 6S Pro
-License:        GPL-2.0-only
+License:        Unknown
 URL:            https://github.com/ianchb/xiaomi-charger-mode
 Source0:        %{url}/archive/refs/tags/%{version}.tar.gz#/%{name}-%{version}.tar.gz
 BuildArch:      noarch
@@ -41,3 +41,6 @@ systemctl enable xiaomi-charger-mode.service
 %systemd_postun_with_restart xiaomi-charger-mode.service
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.20-2
+- License: GPL-2.0-only -> Unknown: upstream ianchb/xiaomi-charger-mode ships no
+  LICENSE file, so there is nothing to base an SPDX tag on.

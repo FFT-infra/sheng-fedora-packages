@@ -2,7 +2,7 @@
 
 Name:           xiaomi-pen-status
 Version:        0.2.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Stylus pen status tray utility for Xiaomi Pad 6S Pro
 License:        GPL-2.0-only
 URL:            https://github.com/ianchb/xiaomi-pen-status
@@ -31,5 +31,9 @@ install -Dm644 xiaomi-pen-status.svg %{buildroot}%{_datadir}/icons/hicolor/scala
 %{_bindir}/xiaomi-pen-status
 %{_datadir}/applications/xiaomi-pen-status.desktop
 %{_datadir}/icons/hicolor/scalable/apps/xiaomi-pen-status.svg
+%license LICENSE
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.2.3-2
+- Ship the upstream license text (%license LICENSE, GPL-2), matching the
+  License: GPL-2.0-only tag

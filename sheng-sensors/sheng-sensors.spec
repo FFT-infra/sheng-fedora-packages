@@ -2,9 +2,9 @@
 
 Name:           sheng-sensors
 Version:        20240917
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Sensor configuration files for Xiaomi Pad 6S Pro (sheng)
-License:        Proprietary
+License:        Unknown
 URL:            https://github.com/ianchb/sm8550-mainline
 BuildArch:      noarch
 BuildRequires:  systemd-rpm-macros
@@ -65,6 +65,11 @@ fi
 %systemd_postun_with_restart adsprpcd-sensorspd.service
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 20240917-3
+- License: Proprietary -> Unknown. "Proprietary" is not a valid SPDX tag and
+  does not describe config files whose provenance mixes the GPL-2.0 mainline
+  tree with local units; left unclassified on purpose.
+
 * Mon Oct 12 2026 Sheng Packaging <packaging@sheng.local> - 20240917-2
 - Drop Requires: iio-sensor-proxy-ssc; sheng-sensors is config-only and no
   longer forces the SSC-enabled proxy. Install iio-sensor-proxy-ssc separately.

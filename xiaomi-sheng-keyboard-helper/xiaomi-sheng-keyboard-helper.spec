@@ -2,7 +2,7 @@
 
 Name:           xiaomi-sheng-keyboard-helper
 Version:        0.2.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Keyboard cover helper for Xiaomi Pad 6S Pro
 License:        Apache-2.0
 URL:            https://github.com/ianchb/xiaomi-sheng-keyboard-helper
@@ -45,6 +45,7 @@ install -Dm644 udev/90-xiaomi-sheng-keyboard-helper.rules \
 %{_unitdir}/xiaomi-sheng-keyboard-helper-angle.service
 %{_userunitdir}/xiaomi-sheng-keyboard-helper-micmute.service
 %{_udevrulesdir}/90-xiaomi-sheng-keyboard-helper.rules
+%license LICENSE
 %doc README.md
 
 %post
@@ -61,6 +62,11 @@ fi
 %systemd_postun_with_restart xiaomi-sheng-keyboard-helper-angle.service
 
 %changelog
-* Tue Aug 24 2026 xiaomi <GhfunNiHe@bbcctv520@petalmail.com> - 0.2.0-2
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.2.0-3
+- Ship the upstream license text (%license LICENSE, Apache-2.0)
+- Fix the weekday of the 0.2.0-2 entry: 2026-08-24 is a Monday, not a Tuesday
+  (rpmspec warned about the bogus date on every run)
+
+* Mon Aug 24 2026 xiaomi <GhfunNiHe@bbcctv520@petalmail.com> - 0.2.0-2
 - Fix mic-mute LED not updating under non-English locales by forcing
   LC_ALL=C on the micmute user service (pactl output localization).

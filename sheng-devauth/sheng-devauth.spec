@@ -2,9 +2,9 @@
 
 Name:           sheng-devauth
 Version:        1.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Xiaomi Keyboard authentication daemon for sheng
-License:        GPLv3
+License:        Unknown
 URL:            https://github.com/ianchb/sheng_devauth
 Source0:        %{url}/archive/refs/heads/main.tar.gz#/%{name}-main.tar.gz
 ExclusiveArch:  aarch64
@@ -64,3 +64,7 @@ systemctl enable sheng-devauth.service
 %systemd_postun_with_restart sheng-devauth.service
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 1.0-2
+- License: GPLv3 -> Unknown: upstream ianchb/sheng_devauth ships no LICENSE and
+  its sources carry no license header, so the old tag asserted a grant nobody
+  made. "Unknown" is deliberately not a valid SPDX id.

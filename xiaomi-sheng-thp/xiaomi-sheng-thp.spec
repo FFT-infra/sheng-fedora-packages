@@ -2,7 +2,7 @@
 
 Name:           xiaomi-sheng-thp
 Version:        0.3.9
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Touch Host Processor for Xiaomi Pad 6S Pro
 License:        Apache-2.0
 URL:            https://github.com/ianchb/xiaomi-sheng-thp
@@ -31,6 +31,7 @@ make install DESTDIR=%{buildroot} PREFIX=%{_prefix} LIBEXECDIR=%{_libexecdir}/xi
 %files
 %{_libexecdir}/xiaomi-sheng-thp/xiaomi-sheng-thp
 %{_unitdir}/xiaomi-sheng-thp.service
+%license LICENSE
 %doc %{_docdir}/xiaomi-sheng-thp
 
 %post
@@ -44,3 +45,6 @@ systemctl enable xiaomi-sheng-thp.service
 %systemd_postun_with_restart xiaomi-sheng-thp.service
 
 %changelog
+* Sat Oct 17 2026 Sheng Packaging <packaging@sheng.local> - 0.3.9-2
+- Ship the upstream license text (%license LICENSE, Apache-2.0), matching the
+  SPDX headers already present in the sources
