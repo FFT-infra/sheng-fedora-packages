@@ -28,6 +28,10 @@ jobs:
     timeout-minutes: 180
     container:
       image: fedora:latest
+    env:
+      # kernel-sm8550.spec would default to 10G, which is GitHub's entire
+      # per-repository cache budget: one kernel cache would evict everything.
+      CCACHE_MAXSIZE: 4G
 
     steps:
       - name: Install build tools
@@ -40,6 +44,10 @@ jobs:
       - name: Setup rpmbuild dirs
         run: |
           mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SRPMS}
+          # The spec uses ${CCACHE_DIR:-$HOME/.ccache}; pin it here so the
+          # kernel cache is the directory the cache steps below handle.
+          mkdir -p "$HOME/.ccache"
+          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
 
       # Source0 (upstream tag tarball) and Source1 (sm8550.config) are URLs
       # in the spec; the remaining sources are local files copied below.
@@ -52,14 +60,31 @@ jobs:
           cp kernel-sm8550/99-sheng-generic.conf ~/rpmbuild/SOURCES/
           cp kernel-sm8550/sheng-dts-fastrpc-btaddr.patch ~/rpmbuild/SOURCES/
 
+      # ================================================================
+      # ccache: the same pool as build-sheng-rpms.yml, so a kernel warmed up by
+      # either workflow is reused by the other.
+      #
+      # Restore and save are separate steps on purpose. The combined
+      # actions/cache action hides the save in its post step, which is
+      # declared `post-if: success()`, and its `save-always` input is
+      # deprecated because it "does not work as intended" — so a failed kernel
+      # build would throw away everything it compiled and the next run would
+      # start cold again. `if: always()` on the save step is the documented
+      # replacement.
+      #
+      # The primary key carries github.run_id because a cache entry can never
+      # be overwritten: with a stable key the first successful run would pin
+      # the entry for good and every later run would only ever read that stale
+      # copy. The restore keys then pick up the newest entry of any run.
+      # ================================================================
       - name: Restore ccache
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: ~/.ccache
-          key: ccache-kernel-sm8550-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('kernel-sm8550/kernel-sm8550.spec', 'kernel-sm8550/extra-sm8550.config') }}
+          key: ccache-sheng-sm8550-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}
           restore-keys: |
-            ccache-kernel-sm8550-${{ runner.os }}-${{ runner.arch }}-
-            ccache-kernel-sm8550-
+            ccache-sheng-sm8550-${{ runner.os }}-${{ runner.arch }}-
+            ccache-sheng-sm8550-
 
       - name: Build kernel
         run: |
@@ -128,6 +153,17 @@ jobs:
           # Keep as long as GitHub allows (90 days)
           retention-days: 90
           if-no-files-found: error
+
+      # Keep the compiled objects cached even when the build or the DTB
+      # assertion above failed (see the note on the restore step). The key is
+      # this run's, so this only ever adds an entry; if it already exists the
+      # action warns and skips instead of failing.
+      - name: Save ccache
+        if: always()
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.ccache
+          key: ccache-sheng-sm8550-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}
 
   # ==================================================================
   # Publish the kernel artifacts as a GitHub release: a prerelease when the
