@@ -7,9 +7,13 @@
 %global KERNEL_RPMVER 7.2.6
 %global DEVICE_NAME sheng
 %global PLATFORM_NAME sm8550
+# Appended to the kernel release string so the patched kernel is distinguishable
+# from the stock one by `uname -r` alone. Without it both builds produce
+# 7.2.6-sm8550-g42f3b40 and neither the operator nor %pre can tell them apart.
+%global IRIS_SUFFIX -iris1
 
 Version:         %{KERNEL_RPMVER}
-Release:         5.%{DEVICE_NAME}%{?dist}
+Release:         6.%{DEVICE_NAME}.iris1%{?dist}
 ExclusiveArch:  aarch64
 Name:            kernel-%{PLATFORM_NAME}
 Summary:         Mainline Linux kernel for %{PLATFORM_NAME} devices
@@ -22,6 +26,19 @@ Source2:         scripts/mkbootimg
 Source3:         extra-sm8550.config
 Source4:         ukify.conf
 Source5:         99-sheng-generic.conf
+# Decode-order output plus a 64-buffer CAPTURE queue for the Qualcomm Iris
+# decoder. Both are prerequisites for the zero-copy Import path in the
+# libva-v4l2-iris VA driver; without them the driver falls back to
+# display-order output and refuses Import.
+#
+# The patch is owned by the driver repository and fetched here by commit, so
+# there is exactly one copy of it. Its preimage blobs match the Source0 tag
+# tree exactly, so it applies at fuzz 0.
+Source6:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/f587b14e6b22955c7250a45ff5f43588bbce2114/packaging/kernel/0001-media-iris-decode-order-output-and-64-capture-buffers.patch
+# sha256 of Source6. spectool does not verify it; the %prep check does, so a
+# rewritten upstream commit cannot silently change what this package ships.
+%global IRIS_PATCH_SHA256 be465d291212c127a93f87a98a68d8f299f82e16f27999b907ca16c6ea2071b7
+Patch1:          0001-media-iris-decode-order-output-and-64-capture-buffers.patch
 
 BuildRequires:   bc bison dwarves diffutils elfutils-devel findutils git-core hmaccalc hostname make openssl-devel perl-interpreter rsync tar which flex bzip2 xz zstd python3 python3-devel python3-pyyaml rust rust-src bindgen rustfmt clippy opencsd-devel net-tools
 BuildRequires:   clang lld llvm ccache systemd-boot-unsigned systemd-ukify
@@ -37,15 +54,24 @@ Requires:        systemd-boot-unsigned
 %description
 Mainline kernel for %{PLATFORM_NAME}, packaged for standard Fedora systems
 with UEFI boot support. Built from source archive with commit hash resolved
-from the upstream tag (e.g. %{KERNEL_VER}-%{PLATFORM_NAME}-gXXXXXXXXX).
+from the upstream tag (e.g. %{KERNEL_VER}-%{PLATFORM_NAME}-gXXXXXXXXX), with
+the Iris decode-order patch applied and %{IRIS_SUFFIX} appended to the release
+string.
 
 %prep
 %setup -q -n sm8550-mainline-%{KERNEL_TAG}
 
+# Verify the Iris patch before applying it: the URL above is pinned to a
+# commit, but pinning a commit does not pin a hash, so this is the check that
+# makes the payload reproducible.
+echo "%{IRIS_PATCH_SHA256}  %{_sourcedir}/0001-media-iris-decode-order-output-and-64-capture-buffers.patch" \
+    | sha256sum -c -
+%patch -P1 -p1
+
 # Resolve tag to commit hash without full clone
 COMMIT_HASH=$(git ls-remote %{url}.git refs/tags/%{KERNEL_TAG} | awk '{print $1}' | cut -c1-7)
 echo "Tag %{KERNEL_TAG} commit: ${COMMIT_HASH}"
-LOCALVERSION_FULL="-%{PLATFORM_NAME}-g${COMMIT_HASH}"
+LOCALVERSION_FULL="-%{PLATFORM_NAME}-g${COMMIT_HASH}%{IRIS_SUFFIX}"
 echo "${LOCALVERSION_FULL}" > .lkv_suffix
 
 cp %{SOURCE1} .config
@@ -213,6 +239,12 @@ rm -f "${INITRD_PATH}"
 echo "--- UKI generation complete for ${KERNEL_RELEASE} ---"
 
 %changelog
+* Thu Oct 22 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-6.sheng.iris1
+- Apply the Iris decode-order + 64-CAPTURE-buffer patch (Source6, fetched by
+  commit from phxinyang/qualcomm-iris-vaapi and verified by sha256)
+- Append -iris1 to the kernel release so uname -r distinguishes this kernel
+  from the stock 7.2.6-sm8550-g42f3b40 build
+
 * Sun Oct 18 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-5.sheng
 - Drop the optional sheng DTS patch logic and its patch file
 
