@@ -13,7 +13,7 @@
 %global IRIS_SUFFIX -iris1
 
 Version:         %{KERNEL_RPMVER}
-Release:         6.%{DEVICE_NAME}.iris1%{?dist}
+Release:         7.%{DEVICE_NAME}.iris1%{?dist}
 ExclusiveArch:  aarch64
 Name:            kernel-%{PLATFORM_NAME}
 Summary:         Mainline Linux kernel for %{PLATFORM_NAME} devices
@@ -26,19 +26,41 @@ Source2:         scripts/mkbootimg
 Source3:         extra-sm8550.config
 Source4:         ukify.conf
 Source5:         99-sheng-generic.conf
-# Decode-order output plus a 64-buffer CAPTURE queue for the Qualcomm Iris
-# decoder. Both are prerequisites for the zero-copy Import path in the
-# libva-v4l2-iris VA driver; without them the driver falls back to
-# display-order output and refuses Import.
+# The four Iris kernel patches this kernel carries. Each is owned by the
+# driver repository and fetched here by commit, so there is exactly one copy
+# of it.
 #
-# The patch is owned by the driver repository and fetched here by commit, so
-# there is exactly one copy of it. Its preimage blobs match the Source0 tag
-# tree exactly, so it applies at fuzz 0.
-Source6:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/f587b14e6b22955c7250a45ff5f43588bbce2114/packaging/kernel/0001-media-iris-decode-order-output-and-64-capture-buffers.patch
-# sha256 of Source6. spectool does not verify it; the %prep check does, so a
-# rewritten upstream commit cannot silently change what this package ships.
-%global IRIS_PATCH_SHA256 be465d291212c127a93f87a98a68d8f299f82e16f27999b907ca16c6ea2071b7
+# 0001-0003 carry preimage blob ids that match the Source0 tag tree, so they
+# apply at offset 0. 0004 was rebased from a different tree: its preimage is
+# fdcf460, the tag has 246ad0a, and it lands at offset -3 lines in
+# iris_buffer.c. All four apply with --fuzz=0, which is what %prep uses, so a
+# genuine mismatch still fails the build.
+#
+# Source6: decode-order output plus a 64-buffer CAPTURE queue. Prerequisites
+# for the zero-copy Import path; without them the driver falls back to
+# display-order output and refuses Import.
+Source6:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0001-media-iris-decode-order-output-and-64-capture-buffers.patch
+# Source7: encoder loop-filter controls (H.264 mode/alpha/beta and the HEVC
+# equivalents). Without them a non-default deblocking request is refused.
+Source7:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0002-media-iris-deblocking-filter-controls.patch
+# Source8: the encoder REQUEST_SYNC_FRAME control. Without it a requested IDR
+# moves the intra period instead of asking the firmware for a sync frame.
+Source8:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0003-media-iris-encoder-request-sync-frame.patch
+# Source9: a CAPTURE error completion keeps the firmware timestamp. Without
+# it a corrupt picture cannot be named and fails only at the drain or the
+# sync bound.
+Source9:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0004-media-iris-preserve-timestamps-on-error-buffers.patch
+# sha256 of each source, in source order. spectool does not verify them; the
+# %prep check does, so a rewritten upstream commit cannot silently change
+# what this package ships.
+%global IRIS_PATCH1_SHA256 be465d291212c127a93f87a98a68d8f299f82e16f27999b907ca16c6ea2071b7
+%global IRIS_PATCH2_SHA256 f742c7aa1fd7a986070798813dd58b77765d9053a228e1897fca3021829ddf3a
+%global IRIS_PATCH3_SHA256 b8e3600e79b9277448d7b84445cf28b623dbbac546081c685153e3dba247f0a9
+%global IRIS_PATCH4_SHA256 75321dfa1731fcebcc171129e6f290ff6dd97b244ff087b25357673f9696ca52
 Patch1:          0001-media-iris-decode-order-output-and-64-capture-buffers.patch
+Patch2:          0002-media-iris-deblocking-filter-controls.patch
+Patch3:          0003-media-iris-encoder-request-sync-frame.patch
+Patch4:          0004-media-iris-preserve-timestamps-on-error-buffers.patch
 
 BuildRequires:   bc bison dwarves diffutils elfutils-devel findutils git-core hmaccalc hostname make openssl-devel perl-interpreter rsync tar which flex bzip2 xz zstd python3 python3-devel python3-pyyaml rust rust-src bindgen rustfmt clippy opencsd-devel net-tools
 BuildRequires:   clang lld llvm ccache systemd-boot-unsigned systemd-ukify
@@ -55,18 +77,25 @@ Requires:        systemd-boot-unsigned
 Mainline kernel for %{PLATFORM_NAME}, packaged for standard Fedora systems
 with UEFI boot support. Built from source archive with commit hash resolved
 from the upstream tag (e.g. %{KERNEL_VER}-%{PLATFORM_NAME}-gXXXXXXXXX), with
-the Iris decode-order patch applied and %{IRIS_SUFFIX} appended to the release
+the four Iris patches applied and %{IRIS_SUFFIX} appended to the release
 string.
 
 %prep
 %setup -q -n sm8550-mainline-%{KERNEL_TAG}
 
-# Verify the Iris patch before applying it: the URL above is pinned to a
-# commit, but pinning a commit does not pin a hash, so this is the check that
-# makes the payload reproducible.
-echo "%{IRIS_PATCH_SHA256}  %{_sourcedir}/0001-media-iris-decode-order-output-and-64-capture-buffers.patch" \
-    | sha256sum -c -
-%patch -P1 -p1
+# Verify every Iris patch before applying any of them: the URLs above are
+# pinned to a commit, but pinning a commit does not pin a hash, so this is the
+# check that makes the payload reproducible. One check for all four, so a
+# mismatch names the file instead of stopping on whichever came first.
+(
+  cd "%{_sourcedir}" &&
+  echo "%{IRIS_PATCH1_SHA256}  0001-media-iris-decode-order-output-and-64-capture-buffers.patch
+%{IRIS_PATCH2_SHA256}  0002-media-iris-deblocking-filter-controls.patch
+%{IRIS_PATCH3_SHA256}  0003-media-iris-encoder-request-sync-frame.patch
+%{IRIS_PATCH4_SHA256}  0004-media-iris-preserve-timestamps-on-error-buffers.patch" \
+      | sha256sum -c -
+)
+%patch -P1 -P2 -P3 -P4 -p1
 
 # Resolve tag to commit hash without full clone
 COMMIT_HASH=$(git ls-remote %{url}.git refs/tags/%{KERNEL_TAG} | awk '{print $1}' | cut -c1-7)
@@ -239,6 +268,14 @@ rm -f "${INITRD_PATH}"
 echo "--- UKI generation complete for ${KERNEL_RELEASE} ---"
 
 %changelog
+* Sun Oct 25 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-7.sheng.iris1
+- Carry all four Iris patches, not only decode-order: encoder loop-filter
+  controls (Source7), the encoder REQUEST_SYNC_FRAME control (Source8) and
+  the timestamp on CAPTURE error completions (Source9). Each is fetched by
+  commit from phxinyang/qualcomm-iris-vaapi and verified by its own sha256
+  before any patch is applied. The release number moves because the payload
+  does; -iris1 stays so the module path is unchanged.
+
 * Thu Oct 22 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-6.sheng.iris1
 - Apply the Iris decode-order + 64-CAPTURE-buffer patch (Source6, fetched by
   commit from phxinyang/qualcomm-iris-vaapi and verified by sha256)
