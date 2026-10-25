@@ -13,7 +13,7 @@
 %global IRIS_SUFFIX -iris1
 
 Version:         %{KERNEL_RPMVER}
-Release:         7.%{DEVICE_NAME}.iris1%{?dist}
+Release:         8.%{DEVICE_NAME}.iris1%{?dist}
 ExclusiveArch:  aarch64
 Name:            kernel-%{PLATFORM_NAME}
 Summary:         Mainline Linux kernel for %{PLATFORM_NAME} devices
@@ -30,6 +30,13 @@ Source5:         99-sheng-generic.conf
 # driver repository and fetched here by commit, so there is exactly one copy
 # of it.
 #
+# The commit is 5a0fcb5, which carries all four files plus their SHA256SUMS.
+# It is also what the `iris-kernel-patches-v1` tag on that repository points
+# at, so the URLs stay resolvable after the pull request branch that
+# introduced them is gone. Do not repoint them at a commit that only a pull
+# request head keeps alive: closing the request lets GitHub collect it and
+# spectool then fails an hour into a build.
+#
 # 0001-0003 carry preimage blob ids that match the Source0 tag tree, so they
 # apply at offset 0. 0004 was rebased from a different tree: its preimage is
 # fdcf460, the tag has 246ad0a, and it lands at offset -3 lines in
@@ -39,17 +46,17 @@ Source5:         99-sheng-generic.conf
 # Source6: decode-order output plus a 64-buffer CAPTURE queue. Prerequisites
 # for the zero-copy Import path; without them the driver falls back to
 # display-order output and refuses Import.
-Source6:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0001-media-iris-decode-order-output-and-64-capture-buffers.patch
+Source6:         https://raw.githubusercontent.com/FFT-infra/qualcomm-iris-vaapi/5a0fcb58461deeb8b6392f07cb42b2804accbe9e/packaging/kernel/0001-media-iris-decode-order-output-and-64-capture-buffers.patch
 # Source7: encoder loop-filter controls (H.264 mode/alpha/beta and the HEVC
 # equivalents). Without them a non-default deblocking request is refused.
-Source7:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0002-media-iris-deblocking-filter-controls.patch
+Source7:         https://raw.githubusercontent.com/FFT-infra/qualcomm-iris-vaapi/5a0fcb58461deeb8b6392f07cb42b2804accbe9e/packaging/kernel/0002-media-iris-deblocking-filter-controls.patch
 # Source8: the encoder REQUEST_SYNC_FRAME control. Without it a requested IDR
 # moves the intra period instead of asking the firmware for a sync frame.
-Source8:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0003-media-iris-encoder-request-sync-frame.patch
+Source8:         https://raw.githubusercontent.com/FFT-infra/qualcomm-iris-vaapi/5a0fcb58461deeb8b6392f07cb42b2804accbe9e/packaging/kernel/0003-media-iris-encoder-request-sync-frame.patch
 # Source9: a CAPTURE error completion keeps the firmware timestamp. Without
 # it a corrupt picture cannot be named and fails only at the drain or the
 # sync bound.
-Source9:         https://raw.githubusercontent.com/phxinyang/qualcomm-iris-vaapi/8dd655e64973414c15ac57590820f547d210e59b/packaging/kernel/0004-media-iris-preserve-timestamps-on-error-buffers.patch
+Source9:         https://raw.githubusercontent.com/FFT-infra/qualcomm-iris-vaapi/5a0fcb58461deeb8b6392f07cb42b2804accbe9e/packaging/kernel/0004-media-iris-preserve-timestamps-on-error-buffers.patch
 # sha256 of each source, in source order. spectool does not verify them; the
 # %prep check does, so a rewritten upstream commit cannot silently change
 # what this package ships.
@@ -268,6 +275,12 @@ rm -f "${INITRD_PATH}"
 echo "--- UKI generation complete for ${KERNEL_RELEASE} ---"
 
 %changelog
+* Mon Oct 26 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-8.sheng.iris1
+- Fetch the Iris patches from FFT-infra/qualcomm-iris-vaapi at 5a0fcb5, the
+  commit the iris-kernel-patches-v1 tag points at. The previous commit was
+  reachable only through a pull request head, which GitHub collects once the
+  request closes; the payload is byte-identical (same four sha256 values).
+
 * Sun Oct 25 2026 Sheng Packaging <packaging@sheng.local> - 7.2.6-7.sheng.iris1
 - Carry all four Iris patches, not only decode-order: encoder loop-filter
   controls (Source7), the encoder REQUEST_SYNC_FRAME control (Source8) and
